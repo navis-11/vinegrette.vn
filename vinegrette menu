@@ -1,1 +1,75 @@
 # vinegrettedanang.vn
+import { useState } from 'react';
+import { Header } from '@/components/Header';
+import { OrderTypeSelector } from '@/components/OrderTypeSelector';
+import { MenuCategories } from '@/components/MenuCategories';
+import { MenuItem } from '@/components/MenuItem';
+import { MenuItemDialog } from '@/components/MenuItemDialog';
+import { CartSheet } from '@/components/CartSheet';
+import { Footer } from '@/components/Footer';
+import { menuCategories } from '@/data/menuData';
+import { MenuItem as MenuItemType } from '@/types/menu';
+import { useLanguage } from '@/contexts/LanguageContext';
+
+const Index = () => {
+  const [activeCategory, setActiveCategory] = useState(menuCategories[0].id);
+  const [selectedItem, setSelectedItem] = useState<MenuItemType | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const { language } = useLanguage();
+
+  const handleAddToCart = (item: MenuItemType) => {
+    setSelectedItem(item);
+    setIsDialogOpen(true);
+  };
+
+  const activeMenuCategory = menuCategories.find(cat => cat.id === activeCategory);
+
+  return (
+    <div className="min-h-screen bg-background flex flex-col">
+      <Header onCartClick={() => setIsCartOpen(true)} />
+      <OrderTypeSelector />
+      <MenuCategories 
+        categories={menuCategories}
+        activeCategory={activeCategory}
+        onCategoryChange={setActiveCategory}
+      />
+
+      <main className="container mx-auto px-4 py-8 flex-1">
+        <div className="mb-6">
+          <h2 className="text-3xl font-bold text-foreground mb-2">
+            {activeMenuCategory?.name[language]}
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {activeMenuCategory?.items.map((item) => (
+            <MenuItem
+              key={item.id}
+              item={item}
+              onAddToCart={handleAddToCart}
+            />
+          ))}
+        </div>
+      </main>
+
+      <Footer />
+
+      <MenuItemDialog
+        item={selectedItem}
+        open={isDialogOpen}
+        onClose={() => {
+          setIsDialogOpen(false);
+          setSelectedItem(null);
+        }}
+      />
+
+      <CartSheet
+        open={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+      />
+    </div>
+  );
+};
+
+export default Index;
